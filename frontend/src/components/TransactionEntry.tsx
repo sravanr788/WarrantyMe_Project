@@ -12,39 +12,42 @@ interface Props {
 const TransactionEntry: React.FC<Props> = ({ onTransactionAdded }) => {
   const { user } = useAuth();
   const [input, setInput] = useState('');
-  const [parsedTransaction, setParsedTransaction] = useState<any>(null);
+  const [parsedTransaction, setParsedTransaction] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleParse = async () => {
     if (!input.trim()) return;
-    
+
     setIsLoading(true);
 
-    // AI processing delay
+    // AI processing
     const parsedData = await axios.post('http://localhost:5000/api/transactions/parse', { text: input }, {
       withCredentials: true,
     });
-    setParsedTransaction(parsedData.data.parsedData);
-    console.log(parsedData.data.parsedData);
+    setParsedTransaction(parsedData.data.parsedData || []);
     setIsLoading(false);
   };
 
   const handleSave = () => {
-    if (!user || !parsedTransaction) return;
+    if (!user || parsedTransaction.length === 0) return;
 
-    const transaction: Transaction = {
-      userId: user.id,
-      ...parsedTransaction,
-    };
+    parsedTransaction.forEach((tx) => {
+      const transaction: Transaction = {
+        userId: user.id,
+        originalText: input,
+        ...tx,
+      };
+      saveTransaction(transaction);
+    });
 
-    saveTransaction(transaction);
     setInput('');
-    setParsedTransaction(null);
+    setParsedTransaction([]);
     onTransactionAdded();
   };
 
+
   const handleCancel = () => {
-    setParsedTransaction(null);
+    setParsedTransaction([]);
   };
 
   return (
@@ -56,7 +59,7 @@ const TransactionEntry: React.FC<Props> = ({ onTransactionAdded }) => {
         </h2>
       </div>
 
-      {!parsedTransaction ? (
+      {!parsedTransaction.length ? (
         <div className="space-y-4">
           <div>
             <textarea
@@ -67,7 +70,7 @@ const TransactionEntry: React.FC<Props> = ({ onTransactionAdded }) => {
               rows={3}
             />
           </div>
-          
+
           <button
             onClick={handleParse}
             disabled={!input.trim() || isLoading}
@@ -85,41 +88,44 @@ const TransactionEntry: React.FC<Props> = ({ onTransactionAdded }) => {
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="bg-gray-50 dark:bg-[#16191f] rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-gray-900 dark:text-white">Parsed Transaction</h3>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                parsedTransaction.confidence > 0.8 
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                  : parsedTransaction.confidence > 0.6
-                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-              }`}>
-                {Math.round(parsedTransaction.confidence * 100)}% confidence
-              </span>
+          {parsedTransaction.map((tx, idx) => (
+            <div key={idx} className="bg-gray-50 dark:bg-[#16191f] rounded-lg p-4 border border-gray-200 dark:border-gray-600 mb-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium text-gray-900 dark:text-white">
+                  Transaction {idx + 1}
+                </h3>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${tx.confidence > 0.8
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : tx.confidence > 0.6
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                  }`}>
+                  {Math.round(tx.confidence * 100)}% confidence
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">Amount:</span>
+                  <p className={`font-medium ${tx.type === 'income'
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                    }`}>
+                    {tx.type === 'income' ? '+' : '-'}₹{tx.amount.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">Category:</span>
+                  <p className="font-medium text-gray-900 dark:text-white">{tx.category}</p>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500 dark:text-gray-400">Description:</span>
+                  <p className="font-medium text-gray-900 dark:text-white">{tx.description}</p>
+                </div>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-500 dark:text-gray-400">Amount:</span>
-                <p className={`font-medium ${
-                  parsedTransaction.type === 'income' 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {parsedTransaction.type === 'income' ? '+' : '-'}₹{parsedTransaction.amount.toFixed(2)}
-                </p>
-              </div>
-              <div>
-                <span className="text-gray-500 dark:text-gray-400">Category:</span>
-                <p className="font-medium text-gray-900 dark:text-white">{parsedTransaction.category}</p>
-              </div>
-              <div className="col-span-2">
-                <span className="text-gray-500 dark:text-gray-400">Description:</span>
-                <p className="font-medium text-gray-900 dark:text-white">{parsedTransaction.description}</p>
-              </div>
-            </div>
-          </div>
+          ))}
+
 
           <div className="flex space-x-3">
             <button

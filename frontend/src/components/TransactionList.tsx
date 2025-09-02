@@ -41,6 +41,7 @@ const TransactionList: React.FC<Props> = ({ transactions, onTransactionUpdated, 
     if (!confirm("Are you sure you want to delete this transaction?")) return;
     try {
       await api.delete(`/api/transactions/${id}`);
+      window.location.reload();
       onTransactionUpdated();
     } catch (error) {
       console.error('Error deleting transaction:', error);
@@ -81,9 +82,7 @@ const TransactionList: React.FC<Props> = ({ transactions, onTransactionUpdated, 
         amount: Number(formData.amount),
         date: new Date(formData.date).toISOString()
       };
-  
-      console.log("Updating transaction:", transactionData);
-  
+    
       await api.put(`/api/transactions/${editingTransaction._id}`, transactionData);
   
       setIsEditing(false);

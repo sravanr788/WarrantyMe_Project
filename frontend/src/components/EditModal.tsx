@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 
-// Separate component so it's not recreated each render
 const EditModal: React.FC<{
     formData: any;
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;

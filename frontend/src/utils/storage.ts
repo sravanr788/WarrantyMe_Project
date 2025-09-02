@@ -5,9 +5,7 @@
 
   export const getTransactions = async (userId: String) => {
     try {
-      console.log(userId);
       const response = await axios.get(`${API_URL}?userId=${userId}`, { withCredentials: true });
-      console.log(response.data.transactions);
       return response.data.transactions;
     } catch (error) {
       console.error('Failed to retrieve transactions:', error);
@@ -18,7 +16,6 @@
   export const saveTransaction = async (transaction: Transaction) => {
     try {
       const response = await axios.post(API_URL, transaction, { withCredentials: true });
-      console.log(response.data.transaction);
       window.location.reload();
       return response.data.transaction;
     } catch (error) {
