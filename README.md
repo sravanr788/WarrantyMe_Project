@@ -52,16 +52,14 @@ An intelligent finance tracker that combines **Google OAuth authentication**, **
 ---
 
 ## 📂 Project Structure  
+```
 Finalyze/
-├── client/ # React frontend
+├── frontend/ # React frontend
 ├── backend/ # Express backend
 ├── docs/ # Documentation + screenshots
 ├── README.md # Setup & project guide
 └── .env.example # Backend environment template
-
-yaml
-Copy code
-
+```
 ---
 
 ## ⚡️ Getting Started  
@@ -73,7 +71,7 @@ cd finalyze
 ```
 🖥 Frontend Setup
 ```bash
-cd client
+cd frontend
 npm install
 npm run dev
 ```
