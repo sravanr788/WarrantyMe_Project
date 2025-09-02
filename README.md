@@ -66,8 +66,8 @@ Finalyze/
 
 ### 🔽 Clone the Repository  
 ```bash
-git clone https://github.com/your-username/finalyze.git
-cd finalyze
+git clone https://github.com/sravanr788/WarrantyMe_Project.git
+cd WarrantyMe_Project
 ```
 🖥 Frontend Setup
 ```bash
